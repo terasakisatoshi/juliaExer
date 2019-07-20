@@ -1,0 +1,15 @@
+[package]
+name = "rustgcd"
+version = "0.1.0"
+
+[dependencies]
+num="0.1.41"
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'unwind'

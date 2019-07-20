@@ -1,0 +1,7 @@
+name = "PiCamera"
+uuid = "b5dd6b30-7714-11e9-37af-4d7783cb7a06"
+authors = ["terasakisatoshi <terasakisatoshi.math@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
