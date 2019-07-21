@@ -12,7 +12,3 @@ end
 xxx = 3
 
 @show rotateZ(pi / 6,Float64[1,0,0])
-
-using BenchmarkTools
-
-@benchmark rotateZ(rand(),rand(3))

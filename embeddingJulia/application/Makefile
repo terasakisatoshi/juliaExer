@@ -10,7 +10,7 @@ C_PROGRAM_FILE=jl_application.c
 all: run
 
 shared_example: $(C_PROGRAM_FILE)
-	gcc $< -o $(TARGET_NAME).dylib -O2 -shared -fPIC $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+	gcc $< -o $(TARGET_NAME).dylib -O2 -shared $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 run: shared_example
 	python call_shared_from.py
