@@ -10,7 +10,7 @@ C_PROGRAM_FILE=test.c
 all: run
 
 embed_example: $(C_PROGRAM_FILE)
-	gcc $< -o $(TARGET_NAME) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+	gcc $< -o $(TARGET_NAME) -O2 $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 run: embed_example
 	./$(TARGET_NAME)
