@@ -6,7 +6,7 @@ end
 
 function convergence_judgment(C, inital_z)
     z = inital_z
-    i = 0
+    i::UInt8 = 0
     while i < 100
         z = f(z, C)
         if abs2(z) > 4
@@ -38,4 +38,4 @@ function main(N)
     heatmap(1:N, 1:N, grid, aspect_ratio = 1)
 end
 
-main(20000)
+main(5000)
