@@ -9,7 +9,6 @@ WORKDIR PackageCompiler.jl
 RUN echo '\n\
 Base.@ccallable foo(x::Cint)::Cint = 42\n\
 Base.@ccallable bar(x::Cint)::Cint = x\n\
-Base.@ccallable baz(x::Cint)::Cint = println("hello") || return 0\n\
 ' > hello.jl
 RUN julia --project=./Project.toml -e 'using Pkg; Pkg.add(["ArgParse"]); pkg"build"' && \
     julia --project=./Project.toml juliac.jl -vasij `pwd`/hello.jl
@@ -30,15 +29,8 @@ RUN which julia
 # create python file named runfrom.py to call hello.so
 RUN echo '\n\
 import ctypes\n\
-tmp=ctypes.CDLL("/usr/local/julia/lib/libjulia.so", ctypes.RTLD_GLOBAL)\n\
-tmp.jl_init__threading()\n\
-print("Initialized: ", tmp.jl_is_initialized())\n\
-tmp.jl_eval_string.argtypes = (ctypes.c_char_p, )\n\
-tmp.jl_eval_string(b"@show sqrt(2.0)")\n\
-tmp.jl_atexit_hook(0)\n\
 lib=ctypes.CDLL("builddir/hello.so", ctypes.RTLD_GLOBAL)\n\
 print(lib.init_jl_runtime())\n\
 print(lib.foo(42))\n\
-# print(lib.bar(42))\n\
-# print(lib.baz(42))\n\
+print(lib.bar(42))\n\
 ' > runfrom.py && python3 runfrom.py
