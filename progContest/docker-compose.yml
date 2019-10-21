@@ -1,0 +1,9 @@
+version: '3'
+services:
+  julia_0.5.1:
+    image: julia:0.5.1
+    container_name: julia_0.5.1
+    volumes:
+      - ./:/work
+    tty: true
+    command: julia < inp.txt
