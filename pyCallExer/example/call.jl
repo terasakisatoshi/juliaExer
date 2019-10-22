@@ -2,7 +2,7 @@ using PyCall
 
 
 #=
-you can't omit quotation surrounds path
+you can't omit double quote surrounds `path`
 i.e.
 good:
 pyimport("sys")."path"
