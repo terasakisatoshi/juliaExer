@@ -1,9 +1,47 @@
+# This is a tool that checks whether your Julia script src.jl works fine for each version of Julia or not.
+# Usage:
+# write src.jl
+# write inp.txt
+# just run docker-compose up
+
 version: '3'
 services:
+  julia_0.5.0:
+    image: julia:0.5.0
+    container_name: julia_0.5.0
+    volumes:
+      - ./:/work
+    working_dir: /work
+    command: /bin/bash -c "julia src.jl < inp.txt"
+
   julia_0.5.1:
     image: julia:0.5.1
     container_name: julia_0.5.1
     volumes:
       - ./:/work
-    tty: true
-    command: julia < inp.txt
+    working_dir: /work
+    command: /bin/bash -c "julia src.jl < inp.txt"
+
+  julia_0.6.1:
+    image: julia:0.6.1
+    container_name: julia_0.6.1
+    volumes:
+      - ./:/work
+    working_dir: /work
+    command: /bin/bash -c "julia src.jl < inp.txt"
+
+  julia_1.0.5:
+    image: julia:1.0.5
+    container_name: julia_1.0.5
+    volumes:
+      - ./:/work
+    working_dir: /work
+    command: /bin/bash -c "julia src.jl < inp.txt"
+
+  julia_1.2.0:
+    image: julia:1.2.0
+    container_name: julia_1.2.0
+    volumes:
+      - ./:/work
+    working_dir: /work
+    command: /bin/bash -c "julia src.jl < inp.txt"

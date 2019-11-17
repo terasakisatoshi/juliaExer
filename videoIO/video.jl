@@ -1,5 +1,5 @@
 import VideoIO
-#using Plots
+import Plots
 import AbstractPlotting
 
 
@@ -31,10 +31,12 @@ end
 
 
 function main_plots()
-    img=AbstractPlotting.logo()
-    p=plot(img) |> display
+    f = VideoIO.opencamera()
+    img = read(f)
+    p=Plots.plot(img) |> display
     for i in 1:100
         @info i
-        plot(img, title="$i") |> display
+        read!(f,img)
+        Plots.plot(img, title="$i") |> display
     end
 end
