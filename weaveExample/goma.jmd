@@ -1,0 +1,48 @@
+---
+title : ゴマちゃーん
+author : ゴマふあざらし
+date: 21th December 2019
+---
+
+# Hello World
+
+$x=1$
+
+```julia
+x=1
+```
+
+```julia; term=true
+println(x)
+```
+
+回転行列
+
+$$
+R(\theta)=\begin{bmatrix}
+\cos\theta & -\sin\theta \\
+\sin\theta & \cos\theta \\
+\end{bmatrix}
+$$
+
+三角関数の描画
+
+```julia; term=true
+using Plots
+plot(sin)
+```
+
+次のようなグラフを描画してみよう
+
+$$
+\begin{align*}
+y_1&=\sin x\\
+y_2&=\cos x
+\end{align*}
+$$
+
+```julia
+using Plots
+p=plot(sin)
+plot!(p, cos)
+```
