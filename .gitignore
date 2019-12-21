@@ -4,3 +4,10 @@
 deps/deps.jl
 *.DS_Store
 *.ipynb_checkpoints
+
+
+# Related to Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
