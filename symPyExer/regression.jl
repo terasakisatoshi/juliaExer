@@ -97,5 +97,5 @@ r3=py"decompose"(uselinsolve2())
 @show r3[1] # a
 
 @show r1[b]
-@show r2[2] # a
-@show r3[2] # a
+@show r2[2] # b
+@show r3[2] # b
