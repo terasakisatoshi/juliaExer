@@ -40,9 +40,7 @@ This func cant use n more than 9
 function _generate_symbol(v,n)
     data=Sym[]
     for i in 1:n
-        t=join(seqdigit,"\\_")
-        target = "$(v)_$(t)"
-        #target = "$(v)\\_$i"
+        target = "$(v)\\_$i"
         _sub = REPL.REPLCompletions.completions(target, length(target))[1][1]
         sub = REPL.REPLCompletions.completion_text(_sub)
         v_s = v * sub
