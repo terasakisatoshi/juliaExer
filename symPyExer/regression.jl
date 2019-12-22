@@ -53,7 +53,12 @@ end
 n = 5
 xs = generate_symbol("x", n)
 ys = generate_symbol("y", n)
-xs, ys=rand(n), rand(n)
+
+# Uncomment if you can switch randomized numerical data
+#xs, ys=rand(n), rand(n)
+#
+
+
 @vars a b
 
 model(x) = a * x + b
