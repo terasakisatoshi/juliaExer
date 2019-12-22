@@ -53,7 +53,7 @@ end
 n = 5
 xs = generate_symbol("x", n)
 ys = generate_symbol("y", n)
-# xs, ys=rand(n), rand(n)
+xs, ys=rand(n), rand(n)
 @vars a b
 
 model(x) = a * x + b
@@ -63,6 +63,15 @@ function bruteforce()
     ∂E∂a, ∂E∂b = diff(E, a), diff(E, b)
     solution = solve([∂E∂a, ∂E∂b], (a, b))
     solution
+end
+
+function theoretical()
+    denom = n * sum(xs .^ 2) - sum(xs)^2
+    a_num = n * sum(xs .* ys) - sum(xs) * sum(ys)
+    â = a_num / denom
+    b_num = sum(xs .^ 2) * sum(ys) - sum(xs) * sum(xs .* ys)
+    b̂ = b_num / denom
+    return Dict(a => â, b => b̂)
 end
 
 function uselinsolve1()
@@ -86,14 +95,17 @@ def decompose(r):
     return [[eq for eq in eqs] for eqs in r.args]
 """
 
+r0 = theoretical()
 r1 = bruteforce()
 r2 = py"decompose"(uselinsolve1())
 r3 = py"decompose"(uselinsolve2())
 
+@show r0[a]
 @show r1[a]
 @show r2[1] # a
 @show r3[1] # a
 
+@show r0[b]
 @show r1[b]
 @show r2[2] # b
 @show r3[2] # b
