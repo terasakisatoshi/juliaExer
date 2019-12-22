@@ -52,33 +52,33 @@ function _generate_symbol(v,n)
     return data
 end
 
-n = 9
+n = 5
 xs = generate_symbol("x", n)
 ys = generate_symbol("y", n)
-#xs=rand(n)
-#ys=rand(n)
+xs,ys=rand(n),rand(n)
 @vars a b
+
 model(x) = a * x + b
 E = 1/2 * sum(@. (model(xs) - ys)^2)
 
 function bruteforce()
-    ∂E∂a, ∂E∂b = diff(E, a) |> simplify, diff(E, b) |> simplify
+    ∂E∂a, ∂E∂b = diff(E, a), diff(E, b)
     solution = solve([∂E∂a, ∂E∂b], (a, b))
     solution
 end
 
 function uselinsolve1()
-    ∂E∂a, ∂E∂b = diff(E, a) |> simplify, diff(E, b) |> simplify
+    ∂E∂a, ∂E∂b = diff(E, a), diff(E, b)
     solution = linsolve((∂E∂a, ∂E∂b), (a, b))
     return solution
 end
 
 function uselinsolve2()
-    A = [
+    A = [)
         diff(E, a, 2) diff(diff(E, a), b)
         diff(diff(E, b), a) diff(E, b, 2)
     ] .|> simplify
-    v = -[diff(E, a)(a => 0, b => 0), diff(E, b)(a => 0, b => 0)] .|> simplify
+    v = -[diff(E, a)(a => 0, b => 0), diff(E, b)(a => 0, b => 0)]
     solution = linsolve((A, v), a, b)
     return solution
 end
