@@ -17,7 +17,7 @@ function generate_vector(v::String, n::Int; start::Int = 1, kwargs::String = "")
 end
 
 D = 2 # Dimension of data
-N = 4 # Num of data
+N = 3 # Num of data
 
 
 function generate_matrix(
@@ -68,7 +68,7 @@ solution = solve(∇E[w], w)
 solution = [solution[k] for k in w]
 @info "solve-with-norma-equation"
 # solve ŵ with normal equation
-theoretical = inv(Matrix{Sym}(X' * X)) * X' * y
+theoretical = inv(Matrix{eltype(X)}(X' * X)) * X' * y
 
 @info "check is equal"
 @assert all(solution .- theoretical .|> simplify .== 0)
