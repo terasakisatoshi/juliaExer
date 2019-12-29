@@ -5,12 +5,13 @@ author : ゴマふあざらし
 
 # Hello World
 
-- greetings
+- greetings $x_k$ xₖ
 
 $x=1$
 
 ```julia
 x=1
+xₖ = 3
 ```
 
 ```julia; term=true
