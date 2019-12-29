@@ -1,6 +1,5 @@
-using PyCall
-using SymPy: @vars, Sym
-using SymPy: solve, simplify
+using SymPy: @vars, Sym, solve
+using SymPy: simplify
 using Zygote
 
 dot(x,y) = sum(x .* y)
@@ -58,18 +57,19 @@ E(X) = 1 / 2 * (dot(y, y) - 2 * dot(y, ŷ(X)) + dot(ŷ(X), ŷ(X)))
     E(X)
 end
 
-py"""
-def decompose(r):
-    return [[eq for eq in eqs] for eqs in r.args]
-"""
-
 @info "solve"
 solution = solve(∇E[w], w)
 solution = [solution[k] for k in w]
 @info "solve-with-norma-equation"
 # solve ŵ with normal equation
-theoretical = inv(Matrix{eltype(X)}(X' * X)) * X' * y
+theoretical = inv(Matrix{eltype(X)}(X' * X)) * Matrix{eltype(X)}(X') * y
 
-@info "check is equal"
-@assert all(solution .- theoretical .|> simplify .== 0)
+
+@info "check isequal"
+if eltype(theoretical) == Sym
+    @assert all(solution .- theoretical .|> simplify .== 0)
+else
+    solution=Array{Float64}(solution)
+    @assert all(isapprox.(solution ,theoretical, atol=1e-6))
+end
 @info "done"
