@@ -1,0 +1,224 @@
+# 重回帰分析
+
+本記事では `SymPy.jl, Zygote.jl` の使い道として重回帰問題を解くことを考える．前半では問題設定と数学的な解法を与え，
+後半では `SymPy.jl` を中心とした実装例を与える．なお，この記事は `Weave.jl` を用いて Markdown 形式のドキュメントを HTML に変換したものである．
+
+
+# 問題設定
+
+前半では重回帰モデルの導入とデータにフィットするようにモデルのパラメータをフィッテングするための目的関数を導入する．
+
+## モデルの設定をする.
+データの次元が $D$ である説明変数と目的変数をペアとする二次元の $N$ 点集合
+$\mathcal{D}=\{\,(\mathbf{x}_n,y_n) \mid x_n \in \mathbb{R}^D, y_n \in \mathbb{R}, i=1,\dots, N\,\}$ が与えられたとき，
+この点集合を特徴付けるモデルを考えたい．モデル $f$ として次の形を考える:
+
+$$
+\begin{align*}
+f &= f(\mathbf{x}) \\
+  &= f(\mathbf{x}; \mathbf{w}) \\
+  &:= w_0+ w_1 x_1 + w_2 x_2 + \dots + w_D x_D .
+\end{align*}
+$$
+
+ここで,
+
+$$
+\begin{align*}
+\mathbf{x}=
+\begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\
+x_D
+\end{bmatrix} \in \mathbb{R}^D,
+\quad
+\mathbf{w}=
+\begin{bmatrix}
+w_0 \\
+w_1 \\
+w_2 \\
+\vdots \\
+w_D
+\end{bmatrix} \in \mathbb{R}^{D+1}
+\end{align*}
+$$
+
+であり, $\mathbf{w}$ がこのモデルに関するパラメータになる. $D=1$ の場合は単回帰で設定したモデル $f(x;a,b) = ax+b$ そのものになる.
+従って, 我々がこれから考えようとするモデルは単回帰の一般化を試みることを意味しており，
+このモデルを重回帰と呼ぶことにする．
+
+## 説明変数の拡張
+
+次元が $D$ の説明変数 $\mathbf{x} = \left[ x_1, x_2, \dots, x_D\right]^\top$ を
+最初の成分が 1 を持つ $D+1$ 次元のデータ $\left[x_0, x_1, x_2, \dots, x_D\right]^\top $, $x_0=1$ と同一視する.
+ここで ${}^\top$ はベクトルの転置を表している.
+この意味で，拡張した説明変数を改めて $\mathbf{x}$ とおきなおす. すなわち:
+
+$$
+\begin{align*}
+\mathbf{x}=
+\begin{bmatrix}
+x_0 \\
+x_1 \\
+x_2 \\
+\vdots \\
+x_D
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 \\
+x_1 \\
+x_2 \\
+\vdots \\
+x_D
+\end{bmatrix}
+\end{align*}
+\in \mathbb{R}^{D+1}.
+$$
+
+以上の同一視のもとでモデル $f$ は次のように表記できる:
+
+$$
+\begin{align*}
+f(\mathbf{x};\mathbf{w})
+&=w_0+ w_1 x_1 + w_2 x_2 + \dots + w_D x_D \\
+&=w_0x_0 + w_1 x_1 + w_2 x_2 + \dots + w_D x_D \quad (\because x_0=1)\\
+&=\left[x_0, x_1, x_1, \dots, x_D\right]
+\begin{bmatrix}
+w_0 \\
+w_1 \\
+\vdots \\
+w_D
+\end{bmatrix}
+\\
+&=\mathbf{x}^\top \mathbf{w} = \langle \mathbf{x},\mathbf{w}\rangle .
+\end{align*}
+$$
+
+ここで $\langle \bullet, \bullet \rangle$ はユークリッド空間の内積を表す.
+
+## 目的関数の導入
+
+目的関数 $E$ として次のように定義する:
+
+$$
+\begin{equation*}
+E := E(\mathbf{w}) = \sum_{n=1}^N (y_n - \hat{y}_n)^2 .
+\end{equation*}
+$$
+
+ただし, $\hat{y}_n$ はモデル $f$ の目的変数 $\mathbf{x}_n$ に対する出力を表す:
+
+$$
+\begin{equation*}
+\hat{y}_n = \hat{y}_n(\mathbf{w}) = f(\mathbf{x}_n; \mathbf{w}) = \langle \mathbf{x}_n, \mathbf{w}\rangle \quad \mathrm{for}\quad n = 1,\dots,N.
+\end{equation*}
+$$
+
+我々目標は $E(\mathbf{w})$ を最小にする $\mathbf{w}=\hat{\mathbf{w}}$ を求めることである:
+
+$$
+\hat{\mathbf{w}} = \underset{\mathbf{w}}{\operatorname{argmin}} E(\mathbf{w})
+$$
+
+## 目的関数の変形
+
+目的関数の微分を系統的にするために式変形を行う. まず
+
+$$
+\begin{align*}
+\mathbf{y}
+:=
+\begin{bmatrix}
+y_1 \\
+y_2 \\
+\vdots \\
+\hat{y}_N
+\end{bmatrix}
+\in \mathbb{R}^N
+,\quad
+\hat{\mathbf{y}}
+:=
+\begin{bmatrix}
+\hat{y}_1 \\
+\hat{y}_2 \\
+\vdots \\
+\hat{y}_N
+\end{bmatrix}
+\end{align*}
+\in \mathbb{R}^N
+$$
+
+と定義する. $N$ 行 $D+1$ 列の行列 $X \in \mathrm{Mat}_{N,D+1}(\mathbb{R})$ として説明変数 $\mathbf{x_n}$ を横ベクトルに転置した $\mathbf{x}_n^\top=\left[x_{n1},\dots ,x_{nD}\right]$ を $n = 1,\dots N$ の順に縦に並べて定義される行列として定める:
+
+$$
+X :=
+\begin{bmatrix}
+\mathbf{x}_1^\top \\
+\mathbf{x}_2^\top \\
+\vdots \\
+\mathbf{x}_N^\top
+\end{bmatrix}
+=
+\begin{bmatrix}
+1      & x_{11} & x_{12} & \dots   & x_{1D} \\
+1      & x_{21} & x_{22} & \dots   & x_{2D} \\
+\vdots & \vdots & \vdots & \ddots  & \vdots \\
+1      & x_{N1} & x_{12} & \dots   & x_{ND}
+\end{bmatrix}
+.
+$$
+
+この $X$ を計画行列と呼ぶ. 計画行列を使うことで $\hat{y}$ は次のように書ける:
+
+$$
+\begin{align*}
+\hat{\mathbf{y}}
+=
+\begin{bmatrix}
+\hat{y}_1 \\
+\hat{y}_2 \\
+\vdots \\
+\hat{y}_N
+\end{bmatrix}
+=
+\begin{bmatrix}
+\langle \mathbf{x}_1, \mathbf{w}\rangle \\
+\langle \mathbf{x}_2, \mathbf{w}\rangle \\
+\vdots \\
+\langle \mathbf{x}_N, \mathbf{w}\rangle
+\end{bmatrix}
+\end{align*}
+=
+\begin{bmatrix}
+1      & x_{11} & x_{12} & \dots   & x_{1D} \\
+1      & x_{21} & x_{22} & \dots   & x_{2D} \\
+\vdots & \vdots & \vdots & \ddots  & \vdots \\
+1      & x_{N1} & x_{12} & \dots   & x_{ND}
+\end{bmatrix}
+\begin{bmatrix}
+w_0 \\
+w_1 \\
+w_2 \\
+\vdots \\
+w_D
+\end{bmatrix}
+= X\mathbf{w}.
+$$
+
+以上の準備のもとで目的関数 $E$ は計画行列と内積を用いて次のように書き下すことができる:
+
+$$
+\begin{align*}
+E(\mathbf{w})
+&= \sum_{n=1}^N (y_n - \hat{y}_n)^2 \\
+&= \langle\mathbf{y} - \hat{\mathbf{y}},\mathbf{y} - \hat{\mathbf{y}} \rangle \\
+&= \langle\mathbf{y},\mathbf{y} \rangle - 2 \langle\mathbf{y}, \hat{\mathbf{y}} \rangle + \langle \hat{\mathbf{y}}, \hat{\mathbf{y}} \rangle \\
+&= \langle\mathbf{y},\mathbf{y} \rangle - 2 \langle\mathbf{y}, X\mathbf{w} \rangle + \langle X\mathbf{w}, X\mathbf{w} \rangle \\
+\end{align*}
+$$
+
+# 微分の計算
+
+TBD
