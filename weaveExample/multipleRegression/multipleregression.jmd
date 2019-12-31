@@ -258,7 +258,7 @@ $$
 
 の転置となることに注意する.
 
-## 多変数写像どうしの内積の微分
+## 内積の微分の導出
 
 補題: $\mathbf{a}=\left[a_1,\dots,a_N\right]^\top, \mathbf{w}=\left[w_1,\dots,w_N\right] \in \mathbb{R}^N$, $A\in \mathrm{Mat}_{M,N}(\mathbb{R})$ に対して次が成り立つ:
 
@@ -269,6 +269,7 @@ $$
 \end{align*}
 $$
 
+証明: 最初の式は内積の定義より自明. また $\langle \mathbf{a},A\mathbf{w} \rangle = $\langle A^\top \mathbf{a},\mathbf{w} \rangle = (A^\Top \mathbf{a})^\top = \mathbf{a}^\top A$ により二番目の式が成立する.
 補題: $\varphi$, $\psi : \mathbb{R}^N \rightarrow \mathbb{R}^M$ に対して次が成り立つ:
 
 $$
@@ -285,3 +286,110 @@ $$
 $\varphi(\mathbf{w})=\left[ \varphi_1(\mathbf{w}),\dots,\varphi_N(\mathbf{w})\right]^\top$,
 $\psi(\mathbf{w})=\left[ \psi_1(\mathbf{w}),\dots,\psi_N(\mathbf{w})\right]^\top$
 である.
+
+証明: 根性でする.
+
+## $\nabla_{\mathbf{w}} E$ の導出
+
+上記補題を用いると
+
+$$
+\begin{align*}
+\nabla_{w}\langle \mathbf{y}, X\hat{\mathbf{y}} \rangle = X^\top\mathbf{y}, \\
+\nabla_{w}\langle X\mathbf{w},X\mathbf{w} \rangle = 2X^\top Xw
+\end{align*}
+$$
+
+などから
+
+$$
+\begin{align*}
+\nabla_{\mathbf{w}} E(\mathbf{w}) = \mathbf{0} \Leftrightarrow \mathbf{w}=(X^\top X)^{-1}X^\top y
+\end{align*}
+$$
+
+がわかる.
+
+# 実装をする.
+
+関数の微分は `SymPy.diff` でも良いが, 数値計算における自動微分をサポートする `Zygote.jl` を使うことにする.
+`Zygote.jl` は計算グラフを構築し数値的に微分を数値的に計算する目的で作られているが Julia の multi-dispatch のおかげか `SymPy.jl` の要素を受け取ることができる.
+
+```julia
+using SymPy: @vars, Sym, solve
+using SymPy: simplify
+using Zygote
+
+dot(x,y) = sum(x .* y)
+
+function generate_vector(v::String, n::Int; start::Int = 1, kwargs::String = "")
+    data::Vector{Sym} = []
+    for i ∈ start:n
+        seqdigit = [c for c in string(i)]
+        v_s = "$v" * join(seqdigit)
+        eval(Meta.parse("@vars $v_s $kwargs"))
+        push!(data, eval(Meta.parse("$(v_s)")))
+    end
+    return data
+end
+
+D = 2 # Dimension of data
+N = 3 # Num of data
+
+
+function generate_matrix(
+    v::String,
+    row::Int,
+    col::Int;
+    rstart::Int = 1,
+    cstart::Int = 1,
+    kwargs::String = "",
+)::Matrix{Sym}
+    X_ = Vector{Sym}[]
+    for n = rstart:row
+        xn = "$v$n"
+        eval(Meta.parse("xn=generate_vector(\"x$n\", $col, start = $cstart, kwargs=\"$kwargs\")"))
+        push!(X_, eval(Meta.parse("xn")))
+    end
+    Xᵀ = Matrix{Sym}(hcat(X_...))
+    X = transpose(Xᵀ)
+    X
+end
+
+X = generate_matrix("x", N, D, cstart = 0, kwargs = "real=true")
+y = generate_vector("y", N, kwargs = "real=true")
+w = generate_vector("w", D, start = 0, kwargs = "real=true")
+
+# Numerical
+# X = rand(N, D + 1)
+# y = rand(N)
+
+X[:, 1] .= 1.0 # set xn0 = 1 for n in 1:N
+
+ŷ(X) = X * w
+E(X) = 1 / 2 * (dot(y, y) - 2 * dot(y, ŷ(X)) + dot(ŷ(X), ŷ(X)))
+
+@info "calc-gradient"
+
+∇E = gradient(Params([w])) do
+    E(X)
+end
+
+@info "solve"
+solution = solve(∇E[w], w)
+solution = [solution[k] for k in w]
+@info "solve-with-norma-equation"
+# solve ŵ with normal equation
+theoretical = inv(Matrix{eltype(X)}(X' * X)) * Matrix{eltype(X)}(X') * y
+
+
+@info "check isequal"
+if eltype(theoretical) == Sym
+    @assert all(solution .- theoretical .|> simplify .== 0)
+else
+    solution=Array{Float64}(solution)
+    @assert all(isapprox.(solution ,theoretical, atol=1e-6))
+end
+@info "done"
+
+```
