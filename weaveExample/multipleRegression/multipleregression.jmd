@@ -221,4 +221,67 @@ $$
 
 # 微分の計算
 
-TBD
+目的関数 $E=E(\mathbf{w})$ の極値問題を解くことに帰着される.
+微分の計算を系統的にするため多変数関数及び写像の微分を導入する.
+$\mathbb{R}^N$ から $\mathbb{R}^M$ への写像
+$\varphi : \mathbb{R}^N \rightarrow \mathbb{R}^M ; \mathbf{w}=(w_1,\dots,w_N) \mapsto \varphi(w)=(\varphi_1(\mathbf{w}),\dots,\varphi_M(\mathbf{w}))$ に対して定まる $M$ 行 $N$ 列の行列を $\varphi$ のヤコビ行列と呼ぶ:
+
+$$
+\frac{\partial \varphi}{\partial \mathbf{w}}(\mathbf{w}) := \left[\frac{\partial \varphi_i}{\partial w_j}(\mathbf{w})\right]_{i,j=1}^{M,N}
+$$
+
+なお $M=1$ の場合はヤコビ行列は $N$ 列の横ベクトルとなる:
+
+$$
+\begin{equation*}
+\frac{\partial \varphi}{\partial \mathbf{w}}(\mathbf{w})
+= \left(
+\frac{\partial \varphi}{\partial w_1}(\mathbf{w})
+,\dots,
+\frac{\partial \varphi}{\partial w_N}(\mathbf{w})
+\right)
+\end{equation*}
+$$
+
+これは勾配ベクトル
+
+$$
+\begin{equation*}
+\nabla_{\mathbf{w}} \varphi(\mathbf{w}) =
+\begin{bmatrix}
+\frac{\partial \varphi}{\partial w_1}(\mathbf{w}) \\
+\vdots \\
+\frac{\partial \varphi}{\partial w_N}(\mathbf{w})
+\end{bmatrix}
+\end{equation*}
+$$
+
+の転置となることに注意する.
+
+## 多変数写像どうしの内積の微分
+
+補題: $\mathbf{a}=\left[a_1,\dots,a_N\right]^\top, \mathbf{w}=\left[w_1,\dots,w_N\right] \in \mathbb{R}^N$, $A\in \mathrm{Mat}_{M,N}(\mathbb{R})$ に対して次が成り立つ:
+
+$$
+\begin{align*}
+& \frac{\partial }{\partial \mathbf{w}} \langle \mathbf{a}, \mathbf{w}\rangle = \mathbf{a}^\top = \left[a_1,\dots,a_N\right] , \\
+& \frac{\partial }{\partial \mathbf{w}} \langle \mathbf{a}, A \mathbf{w}\rangle = \mathbf{a}^\top A .
+\end{align*}
+$$
+
+補題: $\varphi$, $\psi : \mathbb{R}^N \rightarrow \mathbb{R}^M$ に対して次が成り立つ:
+
+$$
+\begin{equation*}
+\frac{\partial }{\partial \mathbf{w}} \langle \varphi(\mathbf{w}), \psi(\mathbf{w}) \rangle
+=
+\psi(\mathbf{w})^\top \frac{\partial\varphi(\mathbf{w})}{\partial \mathbf{w}}
++
+\varphi(\mathbf{w})^\top \frac{\partial\psi(\mathbf{w})}{\partial \mathbf{w}} .
+\end{equation*}
+$$
+
+ただし
+$\varphi(\mathbf{w})=\left[ \varphi_1(\mathbf{w}),\dots,\varphi_N(\mathbf{w})\right]^\top$,
+$\psi(\mathbf{w})=\left[ \psi_1(\mathbf{w}),\dots,\psi_N(\mathbf{w})\right]^\top$
+である.
