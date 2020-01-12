@@ -15,7 +15,7 @@ xₖ = 3
 ```
 
 ```julia; term=true
-println(x)
+println(xₖ)
 ```
 
 回転行列

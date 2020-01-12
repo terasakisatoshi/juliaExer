@@ -4,6 +4,7 @@
 all:
 	julia generate.jl
 clean:
+	rm -f goma.html
 	rm -f goma.aux
 	rm -f goma.log
 	rm -f goma.out
