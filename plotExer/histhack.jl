@@ -37,8 +37,10 @@ function myhistogram(data; bins = 10, norm = true, alpha = 0.5)
     return p
 end
 
-data = randn(1000)
-dmin, dmax = extrema(data)
-bins = 10
-norm = true
-p = myhistogram(data, bins = bins, norm = norm, alpha = 1)
+function main()
+    data = randn(1000)
+    dmin, dmax = extrema(data)
+    bins = 10
+    norm = true
+    p = myhistogram(data, bins = bins, norm = norm, alpha = 1)
+end
