@@ -1,3 +1,4 @@
+using Distributions
 using Plots
 
 function calc_midpoints(edges::AbstractVector)::Vector{Float64}
@@ -33,29 +34,42 @@ function bin_data2d(data::AbstractMatrix, xbins::Integer, ybins::Integer)
         push!(buckets, (yb, xb))
     end
     counts = zeros(Int, length(ymidpts), length(xmidpts))
-    for (yb,xb) in buckets
-
+    for (yb, xb) in buckets
         counts[yb, xb] += 1
     end
     xedges, yedges, xmidpts, ymidpts, buckets, counts
 end
 
-μ=[
--1
--2
+μ = [
+    -1
+    -2
 ]
 
-Σ=[
-1.   -0.7
--0.7 1.
+Σ = [
+    1.0 -0.7
+    -0.7 1.0
 ]
 
 using Distributions
-d=MvNormal(μ,Σ)
-xydata=rand(d,5000)
+d = MvNormal(μ, Σ)
+xydata = rand(d, 10000)
 
-scatter(xydata[1,:],xydata[2,:])
-xedges, yedges, xmidpts, ymidpts, buckets, counts = bin_data2d(xydata, 30, 10)
+p1 = plot(xlabel = "x", ylabel = "y")
+xedges, yedges, xmidpts, ymidpts, buckets, counts = bin_data2d(xydata, 30, 30)
 r, c = size(counts)
-scatter3d!(xmidpts, ymidpts, counts)
-plot!(xlabel="x",ylabel="y")
+scatter!(p1, xydata[1, :], xydata[2, :], alpha = 0.2)
+heatmap!(p1, xmidpts, ymidpts, counts, alpha = 0.85)
+xind = 18
+plot!(
+    p1,
+    [xmidpts[xind], xmidpts[xind]],
+    [minimum(ymidpts), maximum(ymidpts)],
+    color = :red,
+    legend = :false,
+)
+p2 = plot(
+    ymidpts,
+    counts[:, xind] / sum(counts[:, xind]),
+    label = "p(y|x=$(xmidpts[xind])",
+)
+plot(p1, p2, layout = (2, 1))
